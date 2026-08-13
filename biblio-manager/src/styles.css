@@ -1,0 +1,252 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * ============================================================================
+ * SHELF & MARGIN — DESIGN SYSTEM
+ * A quiet reading room: warm cream paper, muted sage, soft corners.
+ * Lora for headings, Nunito Sans for text. Nothing sharp, nothing loud.
+ * ============================================================================
+ */
+
+@theme inline {
+  --font-sans: "Nunito Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Lora", Georgia, "Times New Roman", serif;
+
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 6px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+  --radius-3xl: calc(var(--radius) + 18px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  --color-clay: var(--clay);
+  --color-clay-soft: var(--clay-soft);
+  --color-ink-soft: var(--ink-soft);
+  --color-surface-sunken: var(--surface-sunken);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --shadow-soft: 0 1px 2px oklch(0.25 0.02 60 / 4%);
+  --shadow-lift: 0 1px 3px oklch(0.25 0.02 60 / 7%);
+}
+
+:root {
+  --radius: 1rem;
+
+  /* Ink & Parchment */
+  --background: #f6f1e7;
+  --foreground: #211b17;
+  --card: #f9f5ed;
+  --card-foreground: #211b17;
+  --popover: #f9f5ed;
+  --popover-foreground: #211b17;
+
+  --primary: #6b2737;
+  --primary-foreground: #f6f1e7;
+  --accent: #ece3d1;
+  --accent-foreground: #6b4a1f;
+
+  --secondary: #efe8da;
+  --secondary-foreground: #3a302a;
+  --muted: #efe8da;
+  --muted-foreground: #6b615a;
+  --destructive: #8c2f22;
+  --destructive-foreground: #f6f1e7;
+
+  --border: #d9cebb;
+  --input: #d9cebb;
+  --ring: #8a6d3b;
+
+  --clay: #8a6d3b;
+  --clay-soft: #ece0c6;
+  --ink-soft: #4a413a;
+  --surface-sunken: #f2ece0;
+
+  --chart-1: #6b2737;
+  --chart-2: #8a6d3b;
+  --chart-3: #4a413a;
+  --chart-4: #a8552f;
+  --chart-5: #6b615a;
+
+  --sidebar: #f2ece0;
+  --sidebar-foreground: #211b17;
+  --sidebar-primary: #6b2737;
+  --sidebar-primary-foreground: #f6f1e7;
+  --sidebar-accent: #efe8da;
+  --sidebar-accent-foreground: #3a302a;
+  --sidebar-border: #d9cebb;
+  --sidebar-ring: #8a6d3b;
+}
+
+.dark {
+  --background: #1b1613;
+  --foreground: #ede4d5;
+  --card: #221c18;
+  --card-foreground: #ede4d5;
+  --popover: #221c18;
+  --popover-foreground: #ede4d5;
+
+  --primary: #b6596d;
+  --primary-foreground: #1b1613;
+  --accent: #2e251e;
+  --accent-foreground: #d9bd85;
+
+  --secondary: #2a231d;
+  --secondary-foreground: #ede4d5;
+  --muted: #2a231d;
+  --muted-foreground: #b0a496;
+  --destructive: #c25a48;
+  --destructive-foreground: #1b1613;
+
+  --border: oklch(0.98 0 0 / 12%);
+  --input: oklch(0.98 0 0 / 16%);
+  --ring: #c2a163;
+
+  --clay: #c2a163;
+  --clay-soft: #33291f;
+  --ink-soft: #cec3b3;
+  --surface-sunken: #1f1a16;
+
+  --sidebar: #1f1a16;
+  --sidebar-foreground: #ede4d5;
+  --sidebar-primary: #b6596d;
+  --sidebar-primary-foreground: #1b1613;
+  --sidebar-accent: #2a231d;
+  --sidebar-accent-foreground: #ede4d5;
+  --sidebar-border: oklch(0.98 0 0 / 12%);
+  --sidebar-ring: #c2a163;
+}
+
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+}
+
+@utility eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+@utility paper {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Rendered + editable rich text from the notes editor */
+.margin-prose {
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.margin-prose > * + * {
+  margin-top: 0.75em;
+}
+.margin-prose h1 {
+  font-size: 1.35rem;
+}
+.margin-prose h2 {
+  font-size: 1.15rem;
+}
+.margin-prose ul {
+  list-style: disc;
+  padding-left: 1.35rem;
+}
+.margin-prose ol {
+  list-style: decimal;
+  padding-left: 1.45rem;
+}
+.margin-prose li > * + * {
+  margin-top: 0.35em;
+}
+.margin-prose blockquote {
+  border-left: 2px solid var(--primary);
+  padding-left: 1rem;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+.margin-prose a {
+  text-decoration: underline;
+  color: var(--primary);
+}
+.margin-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.87em;
+  background-color: var(--secondary);
+  border-radius: 0.35rem;
+  padding: 0.1em 0.35em;
+}
+.margin-prose mark {
+  background-color: var(--accent);
+  color: inherit;
+  border-radius: 0.2rem;
+  padding: 0 0.15em;
+}
+.margin-prose hr {
+  border-color: var(--border);
+}
+.margin-prose p.is-editor-empty:first-child::before,
+.margin-prose:has(> p:only-child:empty)::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
