@@ -76,17 +76,26 @@ function AuthPage() {
     }
   }
 
+  //replacing this with below func to remove lovable dependency
+  // async function google() {
+  //   const result = await lovable.auth.signInWithOAuth("google", {
+  //     redirect_uri: window.location.origin,
+  //   });
+  //   if (result.error) {
+  //     toast.error("Google sign-in didn't work. Try email instead.");
+  //     return;
+  //   }
+  //   if (result.redirected) return;
+  //   void navigate({ to: "/library", replace: true });
+  // }
+
   async function google() {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast.error("Google sign-in didn't work. Try email instead.");
-      return;
-    }
-    if (result.redirected) return;
-    void navigate({ to: "/library", replace: true });
-  }
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${window.location.origin}/library` },
+  });
+  if (error) toast.error("Google sign-in didn't work. Try email instead.");
+}
 
   return (
     <div className="mx-auto max-w-md py-10">
