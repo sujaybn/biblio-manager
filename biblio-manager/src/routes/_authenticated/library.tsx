@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { BookCard } from "@/components/library/BookCard";
+import { Bookcase } from "@/components/library/BookCase";
 import { BookDialog } from "@/components/library/BookDialog";
 import { ScanDialog } from "@/components/library/ScanDialog";
 import { Button } from "@/components/ui/button";
@@ -39,12 +40,12 @@ function LibraryPage() {
   const { data: genreRows = [] } = useGenres();
   const seed = useSeedLibrary();
   const [query, setQuery] = useState("");
-  // Kannada is the shelf you reach for first.
-  const [language, setLanguage] = useState("Kannada");
+  // add the language to display the default shelf you reach for first.
+  const [language, setLanguage] = useState("all");
   const [genre, setGenre] = useState("all");
   const [shelf, setShelf] = useState("all");
   const [sort, setSort] = useState<SortKey>("alpha");
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<"grid" | "list" | "shelf">("grid");  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
   const [prefill, setPrefill] =
@@ -183,7 +184,7 @@ function LibraryPage() {
             </select>
           </label>
           <div className="flex items-center gap-1 rounded-full bg-secondary p-1">
-            {(["grid", "list"] as const).map((v) => (
+            {(["grid", "list", "shelf"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -304,23 +305,27 @@ function Section({
 }: {
   title: string;
   books: Book[];
-  view: "grid" | "list";
+  view: "grid" | "list" | "shelf";
   muted?: boolean;
 }) {
   return (
     <section className="mt-9">
       <h2 className={`eyebrow ${muted ? "text-muted-foreground" : ""}`}>{title}</h2>
-      <div
-        className={
-          view === "grid"
-            ? "mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-            : "mt-4 flex flex-col gap-3"
-        }
-      >
-        {books.map((book) => (
-          <BookCard key={book.id} book={book} />
-        ))}
-      </div>
+      {view === "shelf" ? (
+        <Bookcase books={books} />
+      ) : (
+        <div
+          className={
+            view === "grid"
+              ? "mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              : "mt-4 flex flex-col gap-3"
+          }
+        >
+          {books.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

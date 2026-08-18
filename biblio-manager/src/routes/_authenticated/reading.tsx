@@ -139,7 +139,7 @@ function ProgressList({ books }: { books: Book[] }) {
     <div className="mt-6 space-y-4">
       {books.map((book) => (
         <div key={book.id} className="space-y-2">
-          <BookCard book={book} note={book.notes ?? undefined} />
+          <BookCard book={book} />          
           <div className="px-1">
             <ProgressEditor book={book} />
           </div>
@@ -148,3 +148,6 @@ function ProgressList({ books }: { books: Book[] }) {
     </div>
   );
 }
+
+
+
