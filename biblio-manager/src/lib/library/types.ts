@@ -20,6 +20,7 @@ export interface Book {
   year: number | null;
   page_count: number | null;
   pages_read: number;
+  finished_at: string | null;
   cover_hue: number;
   created_at: string;
   updated_at: string;

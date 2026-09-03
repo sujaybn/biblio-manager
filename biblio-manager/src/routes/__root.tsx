@@ -21,7 +21,8 @@ const NAV = [
   { to: "/wishlist", label: "Wish list" },
   { to: "/notes", label: "Notes" },
   { to: "/lending", label: "Lending" },
-  
+  { to: "/stats", label: "Stats" },
+  { to: "/backup", label: "Backup" },
 ] as const;
 
 function NotFoundComponent() {

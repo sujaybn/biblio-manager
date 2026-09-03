@@ -98,7 +98,7 @@ function NotesPage() {
       ) : (
         <div className="mt-6 space-y-4">
           {written.map((book) => (
-            <MarginEntry key={book.id} book={book} />
+            <MarginEntry key={book.id} book={book} query={query.trim()} />
           ))}
         </div>
       )}
@@ -124,7 +124,7 @@ function NotesPage() {
   );
 }
 
-function MarginEntry({ book }: { book: Book }) {
+function MarginEntry({ book, query }: { book: Book; query: string }) {
   const save = useSaveMargins();
   const [editing, setEditing] = useState(false);
   const [notes, setNotes] = useState(book.notes ?? "");
@@ -261,5 +261,34 @@ function MarginEntry({ book }: { book: Book }) {
         </div>
       )}
     </article>
+  );
+}
+/** Strips a rich-text field to plain text and shows a short excerpt around
+ * the first search match, with the match highlighted — so a hit is easy to
+ * spot without reading the whole entry. Falls back to a plain trimmed
+ * excerpt if the match came from the title/author instead of this field. */
+function Excerpt({ html, query, className }: { html: string; query: string; className?: string }) {
+  const plain = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const idx = plain.toLowerCase().indexOf(query.toLowerCase());
+
+  if (idx === -1) {
+    return (
+      <p className={className}>{plain.length > 180 ? `${plain.slice(0, 180)}…` : plain}</p>
+    );
+  }
+
+  const radius = 90;
+  const start = Math.max(0, idx - radius);
+  const end = Math.min(plain.length, idx + query.length + radius);
+  return (
+    <p className={className}>
+      {start > 0 ? "…" : ""}
+      {plain.slice(start, idx)}
+      <mark className="rounded-sm bg-clay-soft px-0.5 text-foreground">
+        {plain.slice(idx, idx + query.length)}
+      </mark>
+      {plain.slice(idx + query.length, end)}
+      {end < plain.length ? "…" : ""}
+    </p>
   );
 }

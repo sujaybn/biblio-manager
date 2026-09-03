@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { ShelfColumns } from "@/components/library/ShelfColumns";
 import { useSession } from "@/lib/library/api";
-
+import { LoanReminders } from "@/components/library/LoanReminders";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -61,9 +61,10 @@ function Landing() {
         <p className="mt-1.5 text-sm text-muted-foreground">
           What's open, and what's waiting its turn.
         </p>
-        <div className="mt-7">
-          <ShelfColumns />
-        </div>
+       <div className="mt-7">
+        <LoanReminders />
+        <ShelfColumns />
+      </div>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
             to="/library"

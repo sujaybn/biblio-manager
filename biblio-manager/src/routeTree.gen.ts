@@ -13,10 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as AuthenticatedBackupRouteImport } from './routes/_authenticated/backup'
 import { Route as AuthenticatedLendingRouteImport } from './routes/_authenticated/lending'
 import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedReadingRouteImport } from './routes/_authenticated/reading'
+import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as AuthenticatedWishlistRouteImport } from './routes/_authenticated/wishlist'
 import { Route as AuthenticatedBookBookIdRouteImport } from './routes/_authenticated/book.$bookId'
 
@@ -39,6 +41,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedBackupRoute = AuthenticatedBackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLendingRoute = AuthenticatedLendingRouteImport.update({
   id: '/lending',
   path: '/lending',
@@ -59,6 +66,11 @@ const AuthenticatedReadingRoute = AuthenticatedReadingRouteImport.update({
   path: '/reading',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStatsRoute = AuthenticatedStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedWishlistRoute = AuthenticatedWishlistRouteImport.update({
   id: '/wishlist',
   path: '/wishlist',
@@ -74,10 +86,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/backup': typeof AuthenticatedBackupRoute
   '/lending': typeof AuthenticatedLendingRoute
   '/library': typeof AuthenticatedLibraryRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/reading': typeof AuthenticatedReadingRoute
+  '/stats': typeof AuthenticatedStatsRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/book/$bookId': typeof AuthenticatedBookBookIdRoute
 }
@@ -85,10 +99,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/backup': typeof AuthenticatedBackupRoute
   '/lending': typeof AuthenticatedLendingRoute
   '/library': typeof AuthenticatedLibraryRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/reading': typeof AuthenticatedReadingRoute
+  '/stats': typeof AuthenticatedStatsRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/book/$bookId': typeof AuthenticatedBookBookIdRoute
 }
@@ -98,10 +114,12 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/backup': typeof AuthenticatedBackupRoute
   '/_authenticated/lending': typeof AuthenticatedLendingRoute
   '/_authenticated/library': typeof AuthenticatedLibraryRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/reading': typeof AuthenticatedReadingRoute
+  '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
   '/_authenticated/book/$bookId': typeof AuthenticatedBookBookIdRoute
 }
@@ -111,10 +129,12 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/backup'
     | '/lending'
     | '/library'
     | '/notes'
     | '/reading'
+    | '/stats'
     | '/wishlist'
     | '/book/$bookId'
   fileRoutesByTo: FileRoutesByTo
@@ -122,10 +142,12 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/backup'
     | '/lending'
     | '/library'
     | '/notes'
     | '/reading'
+    | '/stats'
     | '/wishlist'
     | '/book/$bookId'
   id:
@@ -134,10 +156,12 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/sitemap.xml'
+    | '/_authenticated/backup'
     | '/_authenticated/lending'
     | '/_authenticated/library'
     | '/_authenticated/notes'
     | '/_authenticated/reading'
+    | '/_authenticated/stats'
     | '/_authenticated/wishlist'
     | '/_authenticated/book/$bookId'
   fileRoutesById: FileRoutesById
@@ -179,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/backup': {
+      id: '/_authenticated/backup'
+      path: '/backup'
+      fullPath: '/backup'
+      preLoaderRoute: typeof AuthenticatedBackupRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lending': {
       id: '/_authenticated/lending'
       path: '/lending'
@@ -207,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReadingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/stats': {
+      id: '/_authenticated/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof AuthenticatedStatsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/wishlist': {
       id: '/_authenticated/wishlist'
       path: '/wishlist'
@@ -225,19 +263,23 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBackupRoute: typeof AuthenticatedBackupRoute
   AuthenticatedLendingRoute: typeof AuthenticatedLendingRoute
   AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedReadingRoute: typeof AuthenticatedReadingRoute
+  AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
   AuthenticatedWishlistRoute: typeof AuthenticatedWishlistRoute
   AuthenticatedBookBookIdRoute: typeof AuthenticatedBookBookIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBackupRoute: AuthenticatedBackupRoute,
   AuthenticatedLendingRoute: AuthenticatedLendingRoute,
   AuthenticatedLibraryRoute: AuthenticatedLibraryRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedReadingRoute: AuthenticatedReadingRoute,
+  AuthenticatedStatsRoute: AuthenticatedStatsRoute,
   AuthenticatedWishlistRoute: AuthenticatedWishlistRoute,
   AuthenticatedBookBookIdRoute: AuthenticatedBookBookIdRoute,
 }

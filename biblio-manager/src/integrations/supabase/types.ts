@@ -19,6 +19,7 @@ export type Database = {
           author: string
           cover_hue: number
           cover_url: string | null
+          finished_at: string | null
           created_at: string
           genre: string
           genres: string[]
@@ -41,6 +42,7 @@ export type Database = {
           author?: string
           cover_hue?: number
           cover_url?: string | null
+          finished_at?: string | null
           created_at?: string
           genre?: string
           genres?: string[]
@@ -63,6 +65,7 @@ export type Database = {
           author?: string
           cover_hue?: number
           cover_url?: string | null
+          finished_at?: string | null
           created_at?: string
           genre?: string
           genres?: string[]

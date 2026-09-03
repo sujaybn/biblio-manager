@@ -98,8 +98,13 @@ function LoanGroup({
       ) : (
         <ul className="mt-4 space-y-3">
           {loans.map((loan) => {
-            const overdue =
-              !loan.returned_on && loan.due_on && Date.parse(loan.due_on) < Date.now();
+            const dueMs = loan.due_on ? Date.parse(loan.due_on) : null;
+            const overdue = !loan.returned_on && dueMs !== null && dueMs < Date.now();
+            const dueSoon =
+              !loan.returned_on &&
+              !overdue &&
+              dueMs !== null &&
+              dueMs - Date.now() < 3 * 24 * 60 * 60 * 1000;
             return (
               <li
                 key={loan.id}
@@ -129,6 +134,11 @@ function LoanGroup({
                     <span className="rounded-full bg-clay-soft px-2.5 py-1 text-[11px] text-clay">
                       Overdue
                     </span>
+                  )}
+                    {dueSoon && (
+                      <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] text-accent-foreground">
+                        Due soon
+                      </span>
                   )}
                   {!settled && (
                     <Button

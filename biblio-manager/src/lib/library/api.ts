@@ -295,7 +295,10 @@ export function useSetReadingStatus() {
     mutationFn: async (input: { id: string; reading_status: Book["reading_status"] }) => {
       const { error } = await supabase
         .from("books")
-        .update({ reading_status: input.reading_status })
+        .update({
+          reading_status: input.reading_status,
+          finished_at: input.reading_status === "finished" ? new Date().toISOString() : null,
+        })
         .eq("id", input.id);
       if (error) throw error;
     },
