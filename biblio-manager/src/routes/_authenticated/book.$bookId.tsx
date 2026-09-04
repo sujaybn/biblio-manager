@@ -27,6 +27,7 @@ import {
   SHELF_LABEL,
   spineStyle,
 } from "@/lib/library/types";
+import { StarRating } from "@/components/library/StarRating";
 
 export const Route = createFileRoute("/_authenticated/book/$bookId")({
   head: () => ({
@@ -143,8 +144,10 @@ function BookPage() {
                 : SHELF_LABEL[book.shelf]}
             </Pill>
             <Pill>{READING_LABEL[book.reading_status]}</Pill>
-            {book.rating ? <Pill>{"★".repeat(book.rating)}</Pill> : null}
-          </div>
+            </div>
+            <div className="mt-3">
+              <StarRating bookId={book.id} rating={book.rating} size="md" />
+            </div>
           {book.tags.length > 0 && (
             <p className="mt-3 text-[12px] text-muted-foreground">{book.tags.join(" · ")}</p>
           )}

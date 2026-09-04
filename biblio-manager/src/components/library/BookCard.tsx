@@ -11,6 +11,8 @@ import {
   type Book,
 } from "@/lib/library/types";
 
+import { StarRating } from "@/components/library/StarRating";
+
 const statusTone: Record<string, string> = {
   reading: "bg-clay-soft text-clay",
   finished: "bg-accent text-accent-foreground",
@@ -91,10 +93,10 @@ export function BookCard({ book, note }: { book: Book; note?: string }) {
               On my shelf
             </span>
           ) : null}
-          {book.rating ? (
-            <span className="text-[11px] text-clay">{"\u2605".repeat(book.rating)}</span>
-          ) : null}
-        </div>
+          </div>
+          <div className="mt-1.5" onClick={(e) => e.preventDefault()}>
+            <StarRating bookId={book.id} rating={book.rating} />
+          </div>
         {loan ? (
           <p className="mt-2 text-[12px] text-muted-foreground">
             {loan.direction === "lent" ? "With" : "From"}{" "}

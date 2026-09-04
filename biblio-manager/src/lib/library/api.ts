@@ -289,6 +289,20 @@ export function useSaveMargins() {
   });
 }
 
+export function useUpdateRating() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (input: { id: string; rating: number | null }) => {
+      const { error } = await supabase
+        .from("books")
+        .update({ rating: input.rating })
+        .eq("id", input.id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
 export function useSetReadingStatus() {
   const invalidate = useInvalidate();
   return useMutation({
