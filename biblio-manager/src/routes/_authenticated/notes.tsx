@@ -8,6 +8,7 @@ import { RichText, isRichTextEmpty } from "@/components/library/RichText";
 import { RichTextEditor } from "@/components/library/RichTextEditor";
 import { useBooks, useSaveMargins } from "@/lib/library/api";
 import { bookGenres, spineStyle, type Book } from "@/lib/library/types";
+import { ListSkeleton } from "@/components/library/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/notes")({
   head: () => ({
@@ -90,7 +91,7 @@ function NotesPage() {
       </div>
 
       {isLoading ? (
-        <p className="mt-10 text-sm text-muted-foreground">Turning the pages…</p>
+        <ListSkeleton />
       ) : written.length === 0 ? (
         <p className="paper mt-8 p-8 text-sm text-muted-foreground">
           Nothing written yet. Open a book and add a note or a review — it will gather here.

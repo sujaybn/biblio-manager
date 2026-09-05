@@ -201,6 +201,20 @@ export function useDeleteLoan() {
   });
 }
 
+export function useBulkUpdateBooks() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (input: {
+      ids: string[];
+      patch: { shelf?: Book["shelf"]; genre?: string; genres?: string[] };
+    }) => {
+      const { error } = await supabase.from("books").update(input.patch).in("id", input.ids);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
 export function useSaveGenre() {
   const invalidate = useInvalidate();
   return useMutation({
@@ -263,20 +277,6 @@ export function useUpdateGenre() {
   });
 }
 
-export function useToggleUpNext() {
-  const invalidate = useInvalidate();
-  return useMutation({
-    mutationFn: async (book: Book) => {
-      const tags = book.tags.includes(UP_NEXT_TAG)
-        ? book.tags.filter((t) => t !== UP_NEXT_TAG)
-        : [...book.tags, UP_NEXT_TAG];
-      const { error } = await supabase.from("books").update({ tags }).eq("id", book.id);
-      if (error) throw error;
-    },
-    onSuccess: invalidate,
-  });
-}
-
 export function useSaveMargins() {
   const invalidate = useInvalidate();
   return useMutation({
@@ -289,24 +289,57 @@ export function useSaveMargins() {
   });
 }
 
-export function useUpdateRating() {
-  const invalidate = useInvalidate();
+/**
+ * A useMutation wrapper that updates the local ["books"] cache immediately
+ * (before the network call resolves), rolling back on error and
+ * re-syncing with the server once the request settles. This is what makes
+ * rating/status/progress changes feel instant instead of waiting on a
+ * round trip.
+ */
+function useOptimisticBookUpdate<TInput>(
+  mutationFn: (input: TInput) => Promise<void>,
+  getId: (input: TInput) => string,
+  patch: (book: Book, input: TInput) => Book,
+) {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; rating: number | null }) => {
+    mutationFn,
+    onMutate: async (input: TInput) => {
+      const id = getId(input);
+      await qc.cancelQueries({ queryKey: ["books"] });
+      const previous = qc.getQueryData<Book[]>(["books"]);
+      qc.setQueryData<Book[]>(
+        ["books"],
+        (old) => old?.map((b) => (b.id === id ? patch(b, input) : b)) ?? old,
+      );
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      if (context?.previous) qc.setQueryData(["books"], context.previous);
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ["books"] });
+    },
+  });
+}
+
+export function useUpdateRating() {
+  return useOptimisticBookUpdate<{ id: string; rating: number | null }>(
+    async (input) => {
       const { error } = await supabase
         .from("books")
         .update({ rating: input.rating })
         .eq("id", input.id);
       if (error) throw error;
     },
-    onSuccess: invalidate,
-  });
+    (input) => input.id,
+    (book, input) => ({ ...book, rating: input.rating }),
+  );
 }
 
 export function useSetReadingStatus() {
-  const invalidate = useInvalidate();
-  return useMutation({
-    mutationFn: async (input: { id: string; reading_status: Book["reading_status"] }) => {
+  return useOptimisticBookUpdate<{ id: string; reading_status: Book["reading_status"] }>(
+    async (input) => {
       const { error } = await supabase
         .from("books")
         .update({
@@ -316,14 +349,18 @@ export function useSetReadingStatus() {
         .eq("id", input.id);
       if (error) throw error;
     },
-    onSuccess: invalidate,
-  });
+    (input) => input.id,
+    (book, input) => ({
+      ...book,
+      reading_status: input.reading_status,
+      finished_at: input.reading_status === "finished" ? new Date().toISOString() : null,
+    }),
+  );
 }
 
 export function useUpdateProgress() {
-  const invalidate = useInvalidate();
-  return useMutation({
-    mutationFn: async (input: { id: string; pages_read: number; page_count?: number | null }) => {
+  return useOptimisticBookUpdate<{ id: string; pages_read: number; page_count?: number | null }>(
+    async (input) => {
       const patch: { pages_read: number; page_count?: number } = {
         pages_read: input.pages_read,
       };
@@ -331,6 +368,30 @@ export function useUpdateProgress() {
       const { error } = await supabase.from("books").update(patch).eq("id", input.id);
       if (error) throw error;
     },
-    onSuccess: invalidate,
-  });
+    (input) => input.id,
+    (book, input) => ({
+      ...book,
+      pages_read: input.pages_read,
+      page_count: input.page_count != null ? input.page_count : book.page_count,
+    }),
+  );
+}
+
+export function useToggleUpNext() {
+  return useOptimisticBookUpdate<Book>(
+    async (book) => {
+      const tags = book.tags.includes(UP_NEXT_TAG)
+        ? book.tags.filter((t) => t !== UP_NEXT_TAG)
+        : [...book.tags, UP_NEXT_TAG];
+      const { error } = await supabase.from("books").update({ tags }).eq("id", book.id);
+      if (error) throw error;
+    },
+    (book) => book.id,
+    (existing, book) => ({
+      ...existing,
+      tags: book.tags.includes(UP_NEXT_TAG)
+        ? book.tags.filter((t) => t !== UP_NEXT_TAG)
+        : [...book.tags, UP_NEXT_TAG],
+    }),
+  );
 }

@@ -20,7 +20,19 @@ const statusTone: Record<string, string> = {
   abandoned: "bg-muted text-muted-foreground",
 };
 
-export function BookCard({ book, note }: { book: Book; note?: string }) {
+export function BookCard({
+  book,
+  note,
+  selectable,
+  selected,
+  onToggleSelect,
+}: {
+  book: Book;
+  note?: string;
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
+}) {
   const { data: loans = [] } = useLoans();
   const setStatus = useSetReadingStatus();
   const loan = activeLoan(loans, book.id);
@@ -29,8 +41,28 @@ export function BookCard({ book, note }: { book: Book; note?: string }) {
     <Link
       to="/book/$bookId"
       params={{ bookId: book.id }}
-      className="paper group flex gap-4 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+      onClick={(e) => {
+        if (selectable) {
+          e.preventDefault();
+          onToggleSelect?.();
+        }
+      }}
+      className={`paper group relative flex gap-4 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift ${
+        selected ? "ring-2 ring-primary" : ""
+      }`}
     >
+      {selectable && (
+        <span
+          aria-hidden
+          className={`absolute right-3 top-3 z-10 flex h-5 w-5 items-center justify-center rounded-full border text-[11px] ${
+            selected
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-card text-transparent"
+          }`}
+        >
+          ✓
+        </span>
+      )}
       {book.cover_url ? (
         <img
           src={book.cover_url}
@@ -93,10 +125,10 @@ export function BookCard({ book, note }: { book: Book; note?: string }) {
               On my shelf
             </span>
           ) : null}
-          </div>
-          <div className="mt-1.5" onClick={(e) => e.preventDefault()}>
-            <StarRating bookId={book.id} rating={book.rating} />
-          </div>
+        </div>
+        <div className="mt-1.5" onClick={(e) => e.preventDefault()}>
+          <StarRating bookId={book.id} rating={book.rating} />
+        </div>
         {loan ? (
           <p className="mt-2 text-[12px] text-muted-foreground">
             {loan.direction === "lent" ? "With" : "From"}{" "}

@@ -8,6 +8,7 @@ import { ProgressEditor } from "@/components/library/ProgressEditor";
 import { Button } from "@/components/ui/button";
 import { useBooks, useSetReadingStatus } from "@/lib/library/api";
 import type { Book } from "@/lib/library/types";
+import { BookGridSkeleton } from "@/components/library/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/reading")({
   head: () => ({
@@ -97,7 +98,7 @@ function ReadingPage() {
       )}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-muted-foreground">Finding your bookmarks…</p>
+        <BookGridSkeleton />
       ) : openNow.length === 0 ? (
         <p className="paper mt-8 p-8 text-sm text-muted-foreground">
           Nothing open at the moment. Add a book you're reading, or pick one from your library.

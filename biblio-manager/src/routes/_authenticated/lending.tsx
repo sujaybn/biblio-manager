@@ -6,6 +6,7 @@ import { LoanDialog } from "@/components/library/LoanDialog";
 import { Button } from "@/components/ui/button";
 import { useBooks, useDeleteLoan, useLoans, useReturnLoan } from "@/lib/library/api";
 import type { Loan } from "@/lib/library/types";
+import { ListSkeleton } from "@/components/library/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/lending")({
   head: () => ({
@@ -52,7 +53,7 @@ function LendingPage() {
       </header>
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-muted-foreground">Loading…</p>
+        <ListSkeleton />
       ) : (
         <div className="mt-8 space-y-10">
           <LoanGroup

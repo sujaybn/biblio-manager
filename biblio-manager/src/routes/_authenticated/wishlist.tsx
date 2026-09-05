@@ -5,6 +5,7 @@ import { BookCard } from "@/components/library/BookCard";
 import { BookDialog } from "@/components/library/BookDialog";
 import { Button } from "@/components/ui/button";
 import { useBooks } from "@/lib/library/api";
+import { BookGridSkeleton } from "@/components/library/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/wishlist")({
   head: () => ({
@@ -42,7 +43,7 @@ function WishlistPage() {
       </header>
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-muted-foreground">Loading…</p>
+        <BookGridSkeleton />
       ) : wishlist.length === 0 ? (
         <p className="paper mt-8 p-8 text-sm text-muted-foreground">
           Nothing on the wish list. Add the next book you're hunting for.

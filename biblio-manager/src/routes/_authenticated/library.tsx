@@ -1,16 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { BookCard } from "@/components/library/BookCard";
 import { Bookcase } from "@/components/library/BookCase";
+import { BookGridSkeleton } from "@/components/library/Skeletons";
 import { BookDialog } from "@/components/library/BookDialog";
 import { ScanDialog } from "@/components/library/ScanDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useBooks, useGenres, useSeedLibrary } from "@/lib/library/api";
+import { useBooks, useBulkUpdateBooks, useGenres, useSeedLibrary } from "@/lib/library/api";
 import { searchLibrary } from "@/lib/library/search";
 import {
-  LANGUAGES,
   SHELF_LABEL,
   SORTS,
   bookGenres,
@@ -45,22 +46,35 @@ function LibraryPage() {
   const [genre, setGenre] = useState("all");
   const [shelf, setShelf] = useState("all");
   const [sort, setSort] = useState<SortKey>("alpha");
-  const [view, setView] = useState<"grid" | "list" | "shelf">("grid");  
+  const [view, setView] = useState<"grid" | "list" | "shelf">("grid");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
   const [prefill, setPrefill] =
     useState<React.ComponentProps<typeof BookDialog>["prefill"]>(null);
+  const bulkUpdate = useBulkUpdateBooks();
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  function toggleSelected(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelected(new Set());
+  }
+
+  // Only show languages you actually have books in — not the full list of
+  // languages the "add a book" dropdown supports. Add a book in a new
+  // language and it'll appear here on its own.
   const languages = useMemo(
-    () =>
-      Array.from(
-        new Set([
-          ...books.map((b) => b.language),
-          ...genreRows.map((g) => g.language),
-          ...LANGUAGES,
-        ]),
-      ).sort(),
-    [books, genreRows],
+    () => Array.from(new Set(books.map((b) => b.language))).sort(),
+    [books],
   );
 
   const filtered = useMemo(
@@ -109,6 +123,13 @@ function LibraryPage() {
           <Button
             variant="outline"
             className="rounded-full px-5"
+            onClick={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
+          >
+            {selectMode ? "Cancel" : "Select"}
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-full px-5"
             onClick={() => setScanOpen(true)}
           >
             Scan or enter ISBN
@@ -124,6 +145,61 @@ function LibraryPage() {
           </Button>
         </div>
       </header>
+
+      {selectMode && (
+        <div className="paper sticky top-[68px] z-30 mt-4 flex flex-wrap items-center justify-between gap-3 p-3.5">
+          <p className="text-[13px] text-muted-foreground">
+            {selected.size === 0
+              ? "Tap books below to select them."
+              : `${selected.size} book${selected.size === 1 ? "" : "s"} selected`}
+          </p>
+          {selected.size > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <BulkShelfPicker
+                onPick={(newShelf) => {
+                  const ids = Array.from(selected);
+                  bulkUpdate.mutate(
+                    { ids, patch: { shelf: newShelf } },
+                    {
+                      onSuccess: () => {
+                        toast.success(`Moved ${ids.length} book${ids.length === 1 ? "" : "s"}.`);
+                        exitSelectMode();
+                      },
+                      onError: () => toast.error("Could not update those."),
+                    },
+                  );
+                }}
+              />
+              {genres.length > 0 && (
+                <BulkGenrePicker
+                  genres={genres}
+                  onPick={(newGenre) => {
+                    const ids = Array.from(selected);
+                    bulkUpdate.mutate(
+                      { ids, patch: { genre: newGenre, genres: [newGenre] } },
+                      {
+                        onSuccess: () => {
+                          toast.success(
+                            `Updated genre for ${ids.length} book${ids.length === 1 ? "" : "s"}.`,
+                          );
+                          exitSelectMode();
+                        },
+                        onError: () => toast.error("Could not update those."),
+                      },
+                    );
+                  }}
+                />
+              )}
+              <button
+                onClick={exitSelectMode}
+                className="text-[12.5px] text-muted-foreground hover:text-foreground"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="paper mt-7 p-5">
         <Input
@@ -201,7 +277,7 @@ function LibraryPage() {
       </div>
 
       {isLoading ? (
-        <p className="mt-10 text-sm text-muted-foreground">Opening your shelves…</p>
+        <BookGridSkeleton />
       ) : books.length === 0 ? (
         <EmptyLibrary onSeed={() => seed.mutate()} seeding={seed.isPending} />
       ) : (
@@ -211,6 +287,9 @@ function LibraryPage() {
               title={query.trim() ? `Matches for "${query.trim()}"` : "On your shelves"}
               books={showing}
               view={view}
+              selectMode={selectMode}
+              selected={selected}
+              onToggleSelect={toggleSelected}
             />
           )}
           {result.wishlistMatches.length > 0 && query.trim() && (
@@ -302,11 +381,17 @@ function Section({
   books,
   view,
   muted,
+  selectMode,
+  selected,
+  onToggleSelect,
 }: {
   title: string;
   books: Book[];
   view: "grid" | "list" | "shelf";
   muted?: boolean;
+  selectMode?: boolean;
+  selected?: Set<string>;
+  onToggleSelect?: (id: string) => void;
 }) {
   return (
     <section className="mt-9">
@@ -322,11 +407,69 @@ function Section({
           }
         >
           {books.map((book) => (
-            <BookCard key={book.id} book={book} />
+            <BookCard
+              key={book.id}
+              book={book}
+              selectable={selectMode}
+              selected={selected?.has(book.id)}
+              onToggleSelect={() => onToggleSelect?.(book.id)}
+            />
           ))}
         </div>
       )}
     </section>
+  );
+}
+
+function BulkShelfPicker({ onPick }: { onPick: (shelf: Book["shelf"]) => void }) {
+  return (
+    <select
+      defaultValue=""
+      onChange={(e) => {
+        if (!e.target.value) return;
+        onPick(e.target.value as Book["shelf"]);
+        e.target.value = "";
+      }}
+      className="h-9 rounded-xl border border-input bg-card px-3 text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+    >
+      <option value="" disabled>
+        Move to shelf…
+      </option>
+      {(Object.entries(SHELF_LABEL) as [Book["shelf"], string][]).map(([val, label]) => (
+        <option key={val} value={val}>
+          {label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function BulkGenrePicker({
+  genres,
+  onPick,
+}: {
+  genres: string[];
+  onPick: (genre: string) => void;
+}) {
+  return (
+    <select
+      defaultValue=""
+      onChange={(e) => {
+        if (!e.target.value) return;
+        onPick(e.target.value);
+        e.target.value = "";
+      }}
+      className="h-9 rounded-xl border border-input bg-card px-3 text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+    >
+      <option value="" disabled>
+        Set genre…
+      </option>
+      {genres.map((g) => (
+        <option key={g} value={g}>
+          {g}
+        </option>
+      ))}
+    </select>
   );
 }
 

@@ -28,6 +28,7 @@ import {
   spineStyle,
 } from "@/lib/library/types";
 import { StarRating } from "@/components/library/StarRating";
+import { BookDetailSkeleton } from "@/components/library/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/book/$bookId")({
   head: () => ({
@@ -67,7 +68,7 @@ function BookPage() {
     setReview(book.review ?? "");
   }, [book?.id, book?.notes, book?.review]);
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
+  if (isLoading) return <BookDetailSkeleton />;
   if (!book)
     return (
       <div className="paper p-10 text-center">
