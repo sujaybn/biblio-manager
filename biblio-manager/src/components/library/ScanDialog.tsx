@@ -43,7 +43,12 @@ export function ScanDialog({ open, onOpenChange, onFound }: Props) {
       setIsbn("");
       setDuplicate(null);
       setBusy(false);
+      return;
     }
+    // Mobile-first: get straight to scanning without an extra tap. If the
+    // camera isn't available (denied, no camera, desktop without one),
+    // startCamera() already falls back gracefully to manual ISBN entry.
+    void startCamera();
     return stopCamera;
   }, [open]);
 

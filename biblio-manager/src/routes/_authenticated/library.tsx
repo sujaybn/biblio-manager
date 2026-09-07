@@ -4,13 +4,13 @@ import { toast } from "sonner";
 
 import { BookCard } from "@/components/library/BookCard";
 import { Bookcase } from "@/components/library/BookCase";
-import { BookGridSkeleton } from "@/components/library/Skeletons";
 import { BookDialog } from "@/components/library/BookDialog";
 import { ScanDialog } from "@/components/library/ScanDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBooks, useBulkUpdateBooks, useGenres, useSeedLibrary } from "@/lib/library/api";
 import { searchLibrary } from "@/lib/library/search";
+import { BookGridSkeleton } from "@/components/library/Skeletons";
 import {
   SHELF_LABEL,
   SORTS,
@@ -41,7 +41,6 @@ function LibraryPage() {
   const { data: genreRows = [] } = useGenres();
   const seed = useSeedLibrary();
   const [query, setQuery] = useState("");
-  // add the language to display the default shelf you reach for first.
   const [language, setLanguage] = useState("all");
   const [genre, setGenre] = useState("all");
   const [shelf, setShelf] = useState("all");
