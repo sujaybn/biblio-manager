@@ -186,6 +186,52 @@ async function fromOpenLibrarySearch(isbn: string): Promise<IsbnLookup | null> {
   };
 }
 
+/** A broader Google Books search by title/author instead of a strict ISBN
+ * lookup. Google's general search matches more loosely (closer to a full
+ * text search) than its isbn: query, and sometimes finds small or
+ * regional-language press editions the exact-ISBN index doesn't have a
+ * clean record for. Returns a short list of candidates to choose from,
+ * since a title search is inherently less precise than an ISBN match. */
+export async function searchBooksByTitle(query: string): Promise<IsbnLookup[]> {
+  const res = await fetch(
+    `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=8`,
+  );
+  if (!res.ok) return [];
+  const json = (await res.json()) as {
+    items?: Array<{
+      volumeInfo?: {
+        title?: string;
+        authors?: string[];
+        language?: string;
+        categories?: string[];
+        publishedDate?: string;
+        pageCount?: number;
+        imageLinks?: { thumbnail?: string; smallThumbnail?: string };
+        industryIdentifiers?: Array<{ type?: string; identifier?: string }>;
+      };
+    }>;
+  };
+  return (json.items ?? [])
+    .map((item) => item.volumeInfo)
+    .filter((info): info is NonNullable<typeof info> => !!info?.title)
+    .map((info) => {
+      const isbn13 = info.industryIdentifiers?.find((id) => id.type === "ISBN_13")?.identifier;
+      const isbn10 = info.industryIdentifiers?.find((id) => id.type === "ISBN_10")?.identifier;
+      const thumb = info.imageLinks?.thumbnail ?? info.imageLinks?.smallThumbnail ?? "";
+      return {
+        isbn: isbn13 ?? isbn10 ?? "",
+        title: info.title!,
+        author: (info.authors ?? []).join(", "),
+        language: languageName(info.language),
+        genre: info.categories?.[0] ?? "",
+        year: info.publishedDate?.slice(0, 4) ?? "",
+        page_count: info.pageCount ? String(info.pageCount) : "",
+        cover_url: thumb.replace(/^http:/, "https:"),
+        source: "Google Books (title search)",
+      };
+    });
+}
+
 /** Try Google Books, then Open Library's exact edition lookup, then Open
  * Library's broader search — across every ISBN-10/13 form the scanned code
  * could be indexed under. Small and regional-language presses (including
