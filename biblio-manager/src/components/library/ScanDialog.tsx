@@ -88,7 +88,22 @@ export function ScanDialog({ open, onOpenChange, onFound }: Props) {
     try {
       const found = await lookupIsbn(code);
       if (!found) {
-        toast.error("No book found for that ISBN. Add it by hand instead.");
+        // Small/regional-language presses are often missing from every
+        // catalogue we check. Don't lose the scanned ISBN — hand it
+        // straight to the manual entry form instead of a dead end.
+        toast("No listing found for that ISBN — fill in the details by hand.");
+        onFound({
+          isbn: code,
+          title: "",
+          author: "",
+          language: "",
+          genre: "",
+          year: "",
+          page_count: "",
+          cover_url: "",
+          source: "Manual entry",
+        });
+        onOpenChange(false);
         return;
       }
       const existing = books.find(
@@ -179,7 +194,7 @@ export function ScanDialog({ open, onOpenChange, onFound }: Props) {
             <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
               <p className="font-display text-[15px] text-primary">Book is already there</p>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                “{duplicate.title}” by {duplicate.author || "unknown"} is already in your library,
+                "{duplicate.title}" by {duplicate.author || "unknown"} is already in your library,
                 so nothing was added.
               </p>
             </div>
