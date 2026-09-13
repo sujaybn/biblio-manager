@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Camera, Menu, X } from "lucide-react";
+import { Camera, Menu, UserRound, X } from "lucide-react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
@@ -217,6 +217,14 @@ function AppShell() {
           {session.loading ? null : session.userId ? (
             <>
               <ThemeToggle />
+              <Link
+                to="/profile"
+                aria-label="Account"
+                title="Account"
+                className="shrink-0 rounded-full border border-border p-2 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <UserRound className="h-4 w-4" />
+              </Link>
               <button
                 onClick={() => setPaletteOpen(true)}
                 className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[12.5px] text-muted-foreground transition-colors hover:text-foreground sm:flex"

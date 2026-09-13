@@ -17,6 +17,7 @@ import { Route as AuthenticatedBackupRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedLendingRouteImport } from './routes/_authenticated/lending'
 import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReadingRouteImport } from './routes/_authenticated/reading'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as AuthenticatedWishlistRouteImport } from './routes/_authenticated/wishlist'
@@ -61,6 +62,11 @@ const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReadingRoute = AuthenticatedReadingRouteImport.update({
   id: '/reading',
   path: '/reading',
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/lending': typeof AuthenticatedLendingRoute
   '/library': typeof AuthenticatedLibraryRoute
   '/notes': typeof AuthenticatedNotesRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/reading': typeof AuthenticatedReadingRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/lending': typeof AuthenticatedLendingRoute
   '/library': typeof AuthenticatedLibraryRoute
   '/notes': typeof AuthenticatedNotesRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/reading': typeof AuthenticatedReadingRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/_authenticated/lending': typeof AuthenticatedLendingRoute
   '/_authenticated/library': typeof AuthenticatedLibraryRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reading': typeof AuthenticatedReadingRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/lending'
     | '/library'
     | '/notes'
+    | '/profile'
     | '/reading'
     | '/stats'
     | '/wishlist'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/lending'
     | '/library'
     | '/notes'
+    | '/profile'
     | '/reading'
     | '/stats'
     | '/wishlist'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/_authenticated/lending'
     | '/_authenticated/library'
     | '/_authenticated/notes'
+    | '/_authenticated/profile'
     | '/_authenticated/reading'
     | '/_authenticated/stats'
     | '/_authenticated/wishlist'
@@ -231,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/reading': {
       id: '/_authenticated/reading'
       path: '/reading'
@@ -267,6 +286,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLendingRoute: typeof AuthenticatedLendingRoute
   AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReadingRoute: typeof AuthenticatedReadingRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
   AuthenticatedWishlistRoute: typeof AuthenticatedWishlistRoute
@@ -278,6 +298,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLendingRoute: AuthenticatedLendingRoute,
   AuthenticatedLibraryRoute: AuthenticatedLibraryRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReadingRoute: AuthenticatedReadingRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
   AuthenticatedWishlistRoute: AuthenticatedWishlistRoute,
