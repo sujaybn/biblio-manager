@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Camera } from "lucide-react";
+import { Camera, Menu, X } from "lucide-react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
@@ -150,6 +150,7 @@ function AppShell() {
   const { queryClient } = Route.useRouteContext();
   const session = useSession();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [fabScanOpen, setFabScanOpen] = useState(false);
   const [fabBookOpen, setFabBookOpen] = useState(false);
   const [fabPrefill, setFabPrefill] =
@@ -187,18 +188,29 @@ function AppShell() {
             <span className="font-display text-[17px] tracking-tight">Shelf &amp; Margin</span>
           </Link>
           {session.userId ? (
-            <nav className="flex flex-1 items-center gap-0.5 overflow-x-auto">
-              {NAV.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                  activeProps={{ className: "bg-secondary text-foreground" }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <>
+              <nav className="hidden flex-1 items-center gap-0.5 sm:flex">
+                {NAV.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                    activeProps={{ className: "bg-secondary text-foreground" }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="flex-1 sm:hidden" />
+              <button
+                type="button"
+                aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+                onClick={() => setMobileNavOpen((v) => !v)}
+                className="flex shrink-0 items-center justify-center rounded-full border border-border p-2 text-muted-foreground transition-colors hover:text-foreground sm:hidden"
+              >
+                {mobileNavOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </button>
+            </>
           ) : (
             <div className="flex-1" />
           )}
@@ -228,6 +240,22 @@ function AppShell() {
             </Link>
           )}
         </div>
+
+        {session.userId && mobileNavOpen && (
+          <nav className="flex flex-col gap-0.5 border-t border-border/70 px-5 py-2.5 sm:hidden">
+            {NAV.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setMobileNavOpen(false)}
+                className="rounded-xl px-3 py-2.5 text-[14.5px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                activeProps={{ className: "bg-secondary text-foreground" }}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </header>
 
       {session.userId ? <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} /> : null}
