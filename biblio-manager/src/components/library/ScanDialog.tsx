@@ -30,6 +30,7 @@ interface Props {
 
 export function ScanDialog({ open, onOpenChange, onFound }: Props) {
   const { data: books = [] } = useBooks();
+  const [mode, setMode] = useState<"scan" | "title">("scan");
   const [isbn, setIsbn] = useState("");
   const [busy, setBusy] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -47,9 +48,22 @@ export function ScanDialog({ open, onOpenChange, onFound }: Props) {
     setScanning(false);
   };
 
+  function switchMode(next: "scan" | "title") {
+    setMode(next);
+    setDuplicate(null);
+    if (next === "title") {
+      setNotFoundIsbn(null);
+      stopCamera();
+    } else {
+      setTitleResults([]);
+      void startCamera();
+    }
+  }
+
   useEffect(() => {
     if (!open) {
       stopCamera();
+      setMode("scan");
       setIsbn("");
       setDuplicate(null);
       setBusy(false);
@@ -161,152 +175,203 @@ export function ScanDialog({ open, onOpenChange, onFound }: Props) {
     onOpenChange(false);
   }
 
+  function renderTitleSearchBox() {
+    return (
+      <>
+        <div className="mt-3 flex gap-2">
+          <Input
+            className="rounded-xl"
+            value={titleQuery}
+            onChange={(e) => setTitleQuery(e.target.value)}
+            placeholder="Title, or title and author"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void searchTitle();
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-full px-4"
+            disabled={titleSearching || !titleQuery.trim()}
+            onClick={() => void searchTitle()}
+          >
+            {titleSearching ? "Searching…" : "Search"}
+          </Button>
+        </div>
+
+        {titleResults.length > 0 && (
+          <div className="mt-3 space-y-1.5">
+            {titleResults.map((result, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => pickTitleResult(result)}
+                className="flex w-full items-center gap-3 rounded-xl border border-border p-2.5 text-left transition-colors hover:bg-secondary"
+              >
+                {result.cover_url ? (
+                  <img
+                    src={result.cover_url}
+                    alt=""
+                    className="h-12 w-8 shrink-0 rounded-sm object-cover"
+                  />
+                ) : (
+                  <div className="h-12 w-8 shrink-0 rounded-sm bg-muted" />
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-[13.5px]">{result.title}</p>
+                  <p className="truncate text-[12px] text-muted-foreground">
+                    {result.author || "Unknown author"}
+                    {result.year ? ` · ${result.year}` : ""}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={skipToManualEntry}
+          className="mt-3 text-[12.5px] text-muted-foreground underline underline-offset-2"
+        >
+          None of these — just let me fill it in by hand
+        </button>
+      </>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-3xl sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">Scan an ISBN</DialogTitle>
+          <DialogTitle className="font-display text-xl">
+            {mode === "scan" ? "Add a book" : "Search by title"}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5">
-          <p className="text-sm text-muted-foreground">
-            Point the barcode on the back of the book at your camera, or type the ISBN. We fetch
-            the author, language, genre and cover — and you can edit all of it before saving.
-          </p>
+        <div className="inline-flex rounded-full bg-secondary p-1">
+          <button
+            type="button"
+            onClick={() => switchMode("scan")}
+            className={`rounded-full px-4 py-1.5 text-[13px] transition-colors ${
+              mode === "scan" ? "bg-card shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            Scan / ISBN
+          </button>
+          <button
+            type="button"
+            onClick={() => switchMode("title")}
+            className={`rounded-full px-4 py-1.5 text-[13px] transition-colors ${
+              mode === "title" ? "bg-card shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            Search by title
+          </button>
+        </div>
 
-          <div className="overflow-hidden rounded-2xl bg-secondary">
-            <video
-              ref={videoRef}
-              className={`aspect-video w-full object-cover ${scanning ? "" : "hidden"}`}
-              muted
-              playsInline
-            />
-            {!scanning && (
-              <div className="flex aspect-video items-center justify-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-full"
-                  onClick={startCamera}
-                >
-                  Use camera
-                </Button>
-              </div>
-            )}
-          </div>
-          {scanning && (
-            <button
-              type="button"
-              className="text-[13px] text-muted-foreground underline underline-offset-2"
-              onClick={stopCamera}
-            >
-              Stop the camera
-            </button>
-          )}
+        {mode === "scan" ? (
+          <div className="space-y-5">
+            <p className="text-sm text-muted-foreground">
+              Point the barcode on the back of the book at your camera, or type the ISBN. We
+              fetch the author, language, genre and cover — and you can edit all of it before
+              saving.
+            </p>
 
-          <div>
-            <Label htmlFor="isbn">ISBN</Label>
-            <div className="mt-1.5 flex gap-2">
-              <Input
-                id="isbn"
-                className="rounded-xl"
-                value={isbn}
-                onChange={(e) => {
-                  setIsbn(e.target.value);
-                  setDuplicate(null);
-                }}
-                placeholder="9788172016470"
-                inputMode="numeric"
+            <div className="overflow-hidden rounded-2xl bg-secondary">
+              <video
+                ref={videoRef}
+                className={`aspect-video w-full object-cover ${scanning ? "" : "hidden"}`}
+                muted
+                playsInline
               />
-              <Button
+              {!scanning && (
+                <div className="flex aspect-video items-center justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={startCamera}
+                  >
+                    Use camera
+                  </Button>
+                </div>
+              )}
+            </div>
+            {scanning && (
+              <button
                 type="button"
-                className="rounded-full px-5"
-                disabled={busy || !isbn.trim()}
-                onClick={() => void handleLookup(isbn)}
+                className="text-[13px] text-muted-foreground underline underline-offset-2"
+                onClick={stopCamera}
               >
-                {busy ? "Looking…" : "Look up"}
-              </Button>
-            </div>
-          </div>
+                Stop the camera
+              </button>
+            )}
 
-          {duplicate && (
-            <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
-              <p className="font-display text-[15px] text-primary">Book is already there</p>
-              <p className="mt-1 text-[13px] text-muted-foreground">
-                "{duplicate.title}" by {duplicate.author || "unknown"} is already in your library,
-                so nothing was added.
-              </p>
-            </div>
-          )}
-
-          {notFoundIsbn && (
-            <div className="rounded-2xl border border-border bg-secondary/60 p-4">
-              <p className="font-display text-[15px]">No listing for that ISBN</p>
-              <p className="mt-1 text-[13px] text-muted-foreground">
-                This happens most with small or independent presses. Try searching by title
-                instead — it sometimes finds editions the ISBN index misses.
-              </p>
-              <div className="mt-3 flex gap-2">
+            <div>
+              <Label htmlFor="isbn">ISBN</Label>
+              <div className="mt-1.5 flex gap-2">
                 <Input
+                  id="isbn"
                   className="rounded-xl"
-                  value={titleQuery}
-                  onChange={(e) => setTitleQuery(e.target.value)}
-                  placeholder="Title, or title and author"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") void searchTitle();
+                  value={isbn}
+                  onChange={(e) => {
+                    setIsbn(e.target.value);
+                    setDuplicate(null);
                   }}
+                  placeholder="9788172016470"
+                  inputMode="numeric"
                 />
                 <Button
                   type="button"
-                  variant="outline"
-                  className="rounded-full px-4"
-                  disabled={titleSearching || !titleQuery.trim()}
-                  onClick={() => void searchTitle()}
+                  className="rounded-full px-5"
+                  disabled={busy || !isbn.trim()}
+                  onClick={() => void handleLookup(isbn)}
                 >
-                  {titleSearching ? "Searching…" : "Search"}
+                  {busy ? "Looking…" : "Look up"}
                 </Button>
               </div>
-
-              {titleResults.length > 0 && (
-                <div className="mt-3 space-y-1.5">
-                  {titleResults.map((result, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => pickTitleResult(result)}
-                      className="flex w-full items-center gap-3 rounded-xl border border-border p-2.5 text-left transition-colors hover:bg-secondary"
-                    >
-                      {result.cover_url ? (
-                        <img
-                          src={result.cover_url}
-                          alt=""
-                          className="h-12 w-8 shrink-0 rounded-sm object-cover"
-                        />
-                      ) : (
-                        <div className="h-12 w-8 shrink-0 rounded-sm bg-muted" />
-                      )}
-                      <div className="min-w-0">
-                        <p className="truncate text-[13.5px]">{result.title}</p>
-                        <p className="truncate text-[12px] text-muted-foreground">
-                          {result.author || "Unknown author"}
-                          {result.year ? ` · ${result.year}` : ""}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={skipToManualEntry}
-                className="mt-3 text-[12.5px] text-muted-foreground underline underline-offset-2"
-              >
-                None of these — just let me fill it in by hand
-              </button>
             </div>
-          )}
-        </div>
+
+            {duplicate && (
+              <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                <p className="font-display text-[15px] text-primary">Book is already there</p>
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  "{duplicate.title}" by {duplicate.author || "unknown"} is already in your
+                  library, so nothing was added.
+                </p>
+              </div>
+            )}
+
+            {notFoundIsbn && (
+              <div className="rounded-2xl border border-border bg-secondary/60 p-4">
+                <p className="font-display text-[15px]">No listing for that ISBN</p>
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  This happens most with small or independent presses. Try searching by title
+                  instead — it sometimes finds editions the ISBN index misses.
+                </p>
+                {renderTitleSearchBox()}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">
+              Handy for books with no barcode to scan, or ones whose ISBN just isn't catalogued
+              anywhere — search by title (and author, if you like) instead.
+            </p>
+            {duplicate && (
+              <div className="mt-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                <p className="font-display text-[15px] text-primary">Book is already there</p>
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  "{duplicate.title}" by {duplicate.author || "unknown"} is already in your
+                  library, so nothing was added.
+                </p>
+              </div>
+            )}
+            {renderTitleSearchBox()}
+          </div>
+        )}
 
         <DialogFooter>
           <Button
